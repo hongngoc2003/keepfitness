@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.KeepYFitness"
+        tools:targetApi="31">
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:label="@string/title_activity_register"
+            android:theme="@style/Theme.KeepYFitness" />
+
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:label="@string/title_activity_login"
+            android:theme="@style/Theme.KeepYFitness">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".HomeScreen"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ResetPasswordActivity"
+            android:exported="false"
+            android:label="Reset Password"
+            android:theme="@style/Theme.KeepYFitness" />
+        <activity android:name=".ExerciseListActivity" android:exported="true" />
+        <activity android:name=".ScheduleListActivity" android:exported="true" />
+        <activity android:name=".AddScheduleActivity" android:exported="true" />
+        <activity android:name=".WorkoutHistoryActivity" android:exported="true" />
+
+        <activity
+            android:name=".WorkoutResultsActivity"
+            android:exported="false"
+            android:label="Workout Results"
+            android:theme="@style/Theme.KeepYFitness" />
+
+        <activity
+            android:name=".HeartRateActivity"
+            android:exported="false"
+            android:label="Heart Rate"
+            android:theme="@style/Theme.KeepYFitness" />
+        <receiver android:name=".WorkoutNotificationReceiver" android:exported="false" />
+        <activity android:name=".HeartRateHistoryActivity" android:exported="true"/>
+        <activity
+            android:name=".FruitCalo"
+            android:exported="false"
+            android:label="Quét Calo"
+            android:theme="@style/Theme.KeepYFitness" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.keepyfitness.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>

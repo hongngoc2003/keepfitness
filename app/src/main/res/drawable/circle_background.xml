@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Gradient background for better visual appeal -->
+    <gradient
+        android:startColor="#4CAF50"
+        android:endColor="#388E3C"
+        android:angle="45" />
+
+    <!-- White stroke for definition -->
+    <stroke
+        android:width="3dp"
+        android:color="#FFFFFF" />
+
+    <!-- Add some inner shadow effect -->
+    <padding
+        android:left="2dp"
+        android:top="2dp"
+        android:right="2dp"
+        android:bottom="2dp" />
+
+</shape>

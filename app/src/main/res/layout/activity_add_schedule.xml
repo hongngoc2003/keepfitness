@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Section -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:gravity="center">
+
+                <!-- Schedule Icon -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    app:cardCornerRadius="40dp"
+                    app:cardElevation="0dp"
+                    android:layout_marginBottom="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/schedule_gradient"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_menu_my_calendar"
+                            app:tint="@android:color/white" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tạo Lịch Trình"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kế hoạch tập luyện"
+                    android:textSize="16sp"
+                    android:textColor="#666666"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Time Selection Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⏰ Thời gian tập luyện"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32"
+                    android:layout_marginBottom="16dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:boxStrokeColor="#4CAF50"
+                    app:hintTextColor="#4CAF50"
+                    app:startIconDrawable="@android:drawable/ic_lock_idle_alarm"
+                    app:startIconTint="#4CAF50"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Chọn thời gian"
+                        android:focusable="false"
+                        android:clickable="false"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn giờ"
+                    android:backgroundTint="#4CAF50"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="12dp"
+                    app:icon="@android:drawable/ic_lock_idle_alarm"
+                    app:iconTint="@android:color/white" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Exercise Selection Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💪 Bài tập"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32"
+                    android:layout_marginBottom="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn bài tập"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:layout_marginBottom="8dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerExercise"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/spinner_background" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="#4CAF50"
+                    app:hintTextColor="#4CAF50"
+                    app:startIconDrawable="@android:drawable/ic_dialog_info"
+                    app:startIconTint="#4CAF50"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/edtQuantity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Mục tiêu số lần (ví dụ: 50)"
+                        android:inputType="number"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Days Selection Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📅 Ngày tập luyện"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- All Days Option -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="#F8F9FA">
+
+                    <CheckBox
+                        android:id="@+id/checkAllDays"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🌟 Tất cả các ngày"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#2E7D32"
+                        android:padding="16dp"
+                        android:buttonTint="#4CAF50" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Individual Days -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <CheckBox
+                            android:id="@+id/checkMon"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thứ hai"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                        <CheckBox
+                            android:id="@+id/checkTue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thứ ba"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                        <CheckBox
+                            android:id="@+id/checkWed"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thứ tư"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                        <CheckBox
+                            android:id="@+id/checkThu"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thứ năm"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/checkFri"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thứ sáu"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                        <CheckBox
+                            android:id="@+id/checkSat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Thứ bảy"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                        <CheckBox
+                            android:id="@+id/checkSun"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Chủ nhật"
+                            android:textColor="#666666"
+                            android:buttonTint="#4CAF50" />
+
+                        <!-- Empty space to balance layout -->
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveSchedule"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Lưu lịch tập"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:backgroundTint="#4CAF50"
+                android:textColor="@android:color/white"
+                app:cornerRadius="16dp"
+                app:icon="@android:drawable/ic_menu_save"
+                app:iconTint="@android:color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteSchedule"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Xóa"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:backgroundTint="#F44336"
+                android:textColor="@android:color/white"
+                app:cornerRadius="16dp"
+                app:icon="@android:drawable/ic_menu_delete"
+                app:iconTint="@android:color/white"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
