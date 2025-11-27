@@ -48,13 +48,28 @@ class AddScheduleActivity : AppCompatActivity() {
         val edtQuantity = findViewById<EditText>(R.id.edtQuantity)
 
         // Thiết lập danh sách bài tập cho Spinner
-        val exerciseList = listOf("Tập Chống Đẩy", "Squat", "Dang Tay Chân Cardio", "Downward Dog Yoga", "Tree Pose")
+        val exerciseList = listOf(
+            "Tập Chống Đẩy",
+            "Squat",
+            "Dang Tay Chân Cardio",
+            "Downward Dog Yoga",
+            "Tree Pose"
+        )
         val exerciseAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, exerciseList)
         exerciseAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerExercise.adapter = exerciseAdapter
 
         // Setup checkbox listeners with BitSet optimization
-        setupDayCheckboxes(checkMon, checkTue, checkWed, checkThu, checkFri, checkSat, checkSun, checkAll)
+        setupDayCheckboxes(
+            checkMon,
+            checkTue,
+            checkWed,
+            checkThu,
+            checkFri,
+            checkSat,
+            checkSun,
+            checkAll
+        )
 
         // Nếu có dữ liệu chỉnh sửa, hiển thị lên form
         val editScheduleId = intent.getStringExtra("edit_schedule_id")
@@ -67,7 +82,17 @@ class AddScheduleActivity : AppCompatActivity() {
             spinnerExercise.setSelection(exerciseList.indexOf(editSchedule.exercise))
 
             // Load days into BitSet
-            loadDaysIntoBitSet(editSchedule.days, checkMon, checkTue, checkWed, checkThu, checkFri, checkSat, checkSun, checkAll)
+            loadDaysIntoBitSet(
+                editSchedule.days,
+                checkMon,
+                checkTue,
+                checkWed,
+                checkThu,
+                checkFri,
+                checkSat,
+                checkSun,
+                checkAll
+            )
             btnDelete.visibility = Button.VISIBLE
         }
 
@@ -80,13 +105,20 @@ class AddScheduleActivity : AppCompatActivity() {
         }
 
         checkAll.setOnCheckedChangeListener { _, isChecked ->
-            // Use BitSet to efficiently set all days
             if (isChecked) {
-                selectedDaysBitSet.set(0, 7) // Set all 7 days
+                selectedDaysBitSet.set(0, 7) // Set all 7 days efficiently
             } else {
-                selectedDaysBitSet.clear() // Clear all
+                selectedDaysBitSet.clear() // Clear all days efficiently
             }
-            updateCheckboxesFromBitSet(checkMon, checkTue, checkWed, checkThu, checkFri, checkSat, checkSun)
+            updateCheckboxesFromBitSet(
+                checkMon,
+                checkTue,
+                checkWed,
+                checkThu,
+                checkFri,
+                checkSat,
+                checkSun
+            )
         }
 
         btnSave.setOnClickListener {
@@ -99,13 +131,18 @@ class AddScheduleActivity : AppCompatActivity() {
             val days = getDaysFromBitSet()
 
             if (time.isEmpty() || days.isEmpty() || quantity <= 0) {
-                Toast.makeText(this, "Hãy chọn thời gian sau ít nhất 1 ngày kể từ bây giờ", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Hãy chọn thời gian sau ít nhất 1 ngày kể từ bây giờ",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
             val schedule = Schedule(selectedExercise, time, days, quantity)
             val user = auth.currentUser
             if (user != null) {
-                val scheduleId = if (editScheduleId != null) editScheduleId else "${selectedExercise}_${System.currentTimeMillis()}"
+                val scheduleId =
+                    if (editScheduleId != null) editScheduleId else "${selectedExercise}_${System.currentTimeMillis()}"
                 db.collection("users").document(user.uid).collection("schedules")
                     .document(scheduleId)
                     .set(schedule, SetOptions.merge())
@@ -116,7 +153,8 @@ class AddScheduleActivity : AppCompatActivity() {
                         finish()
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(this, "Lỗi lưu lịch tập: ${e.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Lỗi lưu lịch tập: ${e.message}", Toast.LENGTH_LONG)
+                            .show()
                     }
             } else {
                 Toast.makeText(this, "Vui lòng đăng nhập.", Toast.LENGTH_SHORT).show()
@@ -137,29 +175,43 @@ class AddScheduleActivity : AppCompatActivity() {
                             finish()
                         }
                         .addOnFailureListener { e ->
-                            Toast.makeText(this, "Lỗi xóa lịch tập: ${e.message}", Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this,
+                                "Lỗi xóa lịch tập: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                 }
             }
         }
     }
 
-<<<<<<< HEAD
     /**
-     * Setup day checkboxes with BitSet optimization
-     * Memory saving: 7 bits (1 byte) vs 7 bytes = 87.5% reduction
+     * HÀM MINH HỌA BITSET RÕ NHẤT #2: Setup checkboxes với BitSet
+     *
+     * Minh họa rõ ràng nhất cách BitSet tiết kiệm bộ nhớ:
+     * - Truyền thống: 7 biến boolean = 7 bytes (mỗi boolean = 1 byte)
+     * - BitSet: 7 bits = 1 byte (tiết kiệm 87.5%)
+     *
+     * Các thao tác BitSet được dùng:
+     * - set(index, value): Set bit tại vị trí index
+     * - cardinality(): Đếm số bit được set (= số ngày được chọn)
      */
     private fun setupDayCheckboxes(
         checkMon: CheckBox, checkTue: CheckBox, checkWed: CheckBox,
         checkThu: CheckBox, checkFri: CheckBox, checkSat: CheckBox, checkSun: CheckBox,
         checkAll: CheckBox
     ) {
-        val checkboxes = listOf(checkMon, checkTue, checkWed, checkThu, checkFri, checkSat, checkSun)
+        val checkboxes =
+            listOf(checkMon, checkTue, checkWed, checkThu, checkFri, checkSat, checkSun)
 
         checkboxes.forEachIndexed { index, checkbox ->
             checkbox.setOnCheckedChangeListener { _, isChecked ->
+                // Set/unset bit tại vị trí index (0-6)
                 selectedDaysBitSet.set(index, isChecked)
-                // Update "All" checkbox
+
+                // cardinality() đếm số bit = 1 (số ngày được chọn)
+                // Nếu = 7 thì tất cả đều được chọn
                 checkAll.isChecked = selectedDaysBitSet.cardinality() == 7
             }
         }
@@ -204,20 +256,32 @@ class AddScheduleActivity : AppCompatActivity() {
     }
 
     /**
-     * Convert BitSet to day name list
+     * ⭐ HÀM MINH HỌA BITSET RÕ NHẤT #3: Convert BitSet sang List
+     *
+     * Minh họa cách duyệt qua BitSet hiệu quả:
+     * - get(i): Lấy giá trị bit tại vị trí i (true/false)
+     * - Chỉ thêm vào list nếu bit = true
+     *
+     * So sánh:
+     * - Truyền thống: Duyệt 7 biến boolean riêng lẻ
+     * - BitSet: Duyệt 1 cấu trúc duy nhất, compact hơn
      */
     private fun getDaysFromBitSet(): List<String> {
-        val dayNames = listOf("Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật")
+        val dayNames =
+            listOf("Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật")
         val selectedDays = mutableListOf<String>()
 
+        // Duyệt qua 7 bits (0-6)
         for (i in 0 until 7) {
+            // Kiểm tra bit tại vị trí i
             if (selectedDaysBitSet.get(i)) {
                 selectedDays.add(dayNames[i])
             }
         }
 
         return selectedDays
-=======
+    }
+
     private fun scheduleNotification(time: String, days: List<String>, scheduleId: String) {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val timeParts = time.split(":")
@@ -284,6 +348,5 @@ class AddScheduleActivity : AppCompatActivity() {
             )
             alarmManager.cancel(pendingIntent)
         }
->>>>>>> d880ad9d64a4259b3ab8218cfd5f80ee93ccb0ec
     }
 }

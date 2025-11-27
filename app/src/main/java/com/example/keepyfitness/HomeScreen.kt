@@ -6,12 +6,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.keepyfitness.utils.WeatherHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Locale
 
 class HomeScreen : AppCompatActivity() {
 
@@ -111,7 +109,7 @@ class HomeScreen : AppCompatActivity() {
             } else {
                 // Hiển thị tổng calo với text "calo" trên cùng dòng
                 tvCalories.text = if (totalCalories >= 1000) {
-                    String.format("%.1fK calo", totalCalories / 1000.0)
+                    String.format(Locale.getDefault(), "%.1fK calo", totalCalories / 1000.0)
                 } else {
                     "$totalCalories calo"
                 }

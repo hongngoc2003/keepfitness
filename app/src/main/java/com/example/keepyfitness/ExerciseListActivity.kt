@@ -26,7 +26,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.system.measureTimeMillis
 
 class ExerciseListActivity : AppCompatActivity() {
 
@@ -53,8 +52,8 @@ class ExerciseListActivity : AppCompatActivity() {
         )
 
         val adapter = ExerciseAdapter(this, list)
+        exerciseListView.adapter = adapter
     }
-
 
     class ExerciseAdapter(val context: Context, val exerciseList: List<ExerciseDataModel>) : BaseAdapter() {
         private val auth = FirebaseAuth.getInstance()
@@ -79,9 +78,6 @@ class ExerciseListActivity : AppCompatActivity() {
             val card = view.findViewById<CardView>(R.id.cardView)
 
             card.setOnClickListener {
-                // Mark exercise as started (update BitSet)
-                markExerciseAsStarted(exerciseList[position].id)
-
                 // Lấy target từ schedule của ngày hôm nay từ Firestore
                 getTodayTargetForExercise(exerciseList[position].title) { targetReps ->
                     val intent = Intent(context, MainActivity::class.java)
@@ -95,16 +91,6 @@ class ExerciseListActivity : AppCompatActivity() {
             Glide.with(context).asGif().load(exerciseList[position].image).into(exerciseImg)
             titleTV.text = exerciseList[position].title
             return view
-        }
-
-        private fun markExerciseAsStarted(exerciseId: Int) {
-            val prefs = context.getSharedPreferences("exercise_completion", Context.MODE_PRIVATE)
-            val calendar = Calendar.getInstance()
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
-
-            prefs.edit()
-                .putBoolean("exercise_${exerciseId - 1}_started_$today", true)
-                .apply()
         }
 
         private fun getTodayTargetForExercise(exerciseName: String, callback: (Int) -> Unit) {

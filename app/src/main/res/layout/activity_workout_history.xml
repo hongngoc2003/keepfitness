@@ -93,6 +93,45 @@
             android:layout_height="match_parent"
             android:visibility="visible"/>
 
+        <!-- Empty state for history -->
+        <LinearLayout
+            android:id="@+id/emptyHistoryView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="32dp">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_launcher_foreground"
+                android:alpha="0.3"
+                android:contentDescription="Empty state icon"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Chưa có lịch sử tập luyện"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#666666"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Hãy bắt đầu tập luyện ngay!"
+                android:textSize="14sp"
+                android:textColor="#999999"/>
+
+        </LinearLayout>
+
         <!-- Charts ScrollView -->
         <ScrollView
             android:id="@+id/chartsScrollView"

@@ -8,14 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.keepyfitness.Model.ExerciseDataModel
 import com.example.keepyfitness.Model.WorkoutHistory
-import com.example.keepyfitness.Model.PersonalRecord
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.text.SimpleDateFormat
-import java.util.*
 
 class WorkoutResultsActivity : AppCompatActivity() {
 
@@ -45,7 +42,7 @@ class WorkoutResultsActivity : AppCompatActivity() {
         caloriesBurned = calculateCalories(exerciseDataModel.id, completedCount, workoutDuration)
 
         setupUI()
-        migrateLocalDataToFirestore() // Migrate dữ liệu cũ
+        migrateLocalDataToFirestore() // Migrate dữ liệu cũ (will be skipped unless FIREBASE enabled)
         saveWorkoutHistory()
     }
 
@@ -136,13 +133,13 @@ class WorkoutResultsActivity : AppCompatActivity() {
     private fun saveWorkoutHistory() {
         val workoutHistory = WorkoutHistory(
             id = System.currentTimeMillis().toString(),
-            exerciseId = exerciseDataModel.id.toShort(), // Convert to Short
+            exerciseId = exerciseDataModel.id.toShort(),
             exerciseName = exerciseDataModel.title,
-            count = completedCount.toShort(), // Convert to Short
-            targetCount = targetCount.toShort(), // Convert to Short
+            count = completedCount.toShort(),
+            targetCount = targetCount.toShort(),
             date = System.currentTimeMillis(),
-            duration = workoutDuration.toInt(), // Convert to Int
-            caloriesBurned = caloriesBurned, // Already Float
+            duration = workoutDuration.toInt(),
+            caloriesBurned = caloriesBurned.toFloat(), // Convert Double to Float
             isCompleted = completedCount >= targetCount
         )
 
@@ -159,59 +156,93 @@ class WorkoutResultsActivity : AppCompatActivity() {
         historyList.add(workoutHistory)
         prefs.edit().putString("history_list", gson.toJson(historyList)).apply()
 
-        // Lưu vào Firestore
+        // Only attempt to write to Firestore if user has enabled it in prefs
+        val useFirebase = prefs.getBoolean("use_firebase", false)
+        if (!useFirebase) {
+            // Skip Firestore to avoid serialization issues with Short types
+            return
+        }
+
+        // Lưu vào Firestore (an toàn với kiểu dữ liệu: chuyển Short -> Int/Long trước khi gửi)
         val user = auth.currentUser
         if (user != null) {
-            db.collection("users").document(user.uid).collection("workouts")
-                .document(workoutHistory.id)
-                .set(workoutHistory)
-                .addOnSuccessListener {
-                    // Cập nhật personal record
-                    updatePersonalRecord(workoutHistory)
-                }
-                .addOnFailureListener { e ->
-                    android.widget.Toast.makeText(this, "Lỗi lưu lịch sử: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
-                }
+            try {
+                val workoutMap: Map<String, Any> = mapOf(
+                    "id" to workoutHistory.id,
+                    "exerciseId" to workoutHistory.exerciseId.toInt(),
+                    "exerciseName" to workoutHistory.exerciseName,
+                    "count" to workoutHistory.count.toInt(),
+                    "targetCount" to workoutHistory.targetCount.toInt(),
+                    "date" to workoutHistory.date,
+                    "duration" to workoutHistory.duration,
+                    "caloriesBurned" to workoutHistory.caloriesBurned,
+                    "isCompleted" to workoutHistory.isCompleted
+                )
+
+                db.collection("users").document(user.uid).collection("workouts")
+                    .document(workoutHistory.id)
+                    .set(workoutMap)
+                    .addOnSuccessListener {
+                        // Cập nhật personal record safely
+                        updatePersonalRecordSafe(workoutHistory)
+                    }
+                    .addOnFailureListener { e ->
+                        android.widget.Toast.makeText(this, "Lỗi lưu lịch sử: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    }
+            } catch (e: Exception) {
+                // Catch serialization problems or other sync exceptions
+                android.widget.Toast.makeText(this, "Lỗi lưu vào Firestore: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+            }
         } else {
-            android.widget.Toast.makeText(this, "Vui lòng đăng nhập.", android.widget.Toast.LENGTH_SHORT).show()
+            // Not logged in: skip Firestore write but inform user
+            android.widget.Toast.makeText(this, "Không đăng nhập: lịch sử được lưu cục bộ.", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun updatePersonalRecord(workout: WorkoutHistory) {
+    /**
+     * Update personal record in Firestore safely without relying on automatic
+     * deserialization to Kotlin data classes (which can fail for Short fields).
+     * We read primitive numeric fields from the document and write back a Map.
+     */
+    private fun updatePersonalRecordSafe(workout: WorkoutHistory) {
         val user = auth.currentUser ?: return
         val recordRef = db.collection("users").document(user.uid)
             .collection("personalRecords").document(workout.exerciseId.toString())
 
-        // Lấy record hiện tại
         recordRef.get().addOnSuccessListener { document ->
-            val existingRecord = document.toObject(PersonalRecord::class.java)
-            val newRecord = if (existingRecord == null) {
-                PersonalRecord(
-                    exerciseId = workout.exerciseId,
-                    exerciseName = workout.exerciseName,
-                    maxCount = workout.count,
-                    bestDate = workout.date,
-                    totalWorkouts = 1,
-                    averageCount = workout.count.toFloat() // Convert to Float
-                )
-            } else {
-                val newTotalWorkouts = existingRecord.totalWorkouts + 1
-                val newAverageCount = ((existingRecord.averageCount * existingRecord.totalWorkouts) + workout.count) / newTotalWorkouts
-                PersonalRecord(
-                    exerciseId = workout.exerciseId,
-                    exerciseName = workout.exerciseName,
-                    maxCount = maxOf(existingRecord.maxCount, workout.count),
-                    bestDate = if (workout.count > existingRecord.maxCount) workout.date else existingRecord.bestDate,
-                    totalWorkouts = newTotalWorkouts,
-                    averageCount = newAverageCount
-                )
-            }
+            try {
+                // Read existing values using safe getters
+                val existingMaxCount = document.getLong("maxCount")?.toInt() ?: 0
+                val existingBestDate = document.getLong("bestDate") ?: 0L
+                val existingTotalWorkouts = document.getLong("totalWorkouts")?.toInt() ?: 0
+                val existingAverageCount = document.getDouble("averageCount")?.toFloat() ?: 0f
+                val existingExerciseName = document.getString("exerciseName") ?: workout.exerciseName
 
-            // Lưu hoặc update record
-            recordRef.set(newRecord)
-                .addOnFailureListener { e ->
+                val newTotalWorkouts = existingTotalWorkouts + 1
+                val newAverageCount = if (existingTotalWorkouts == 0) {
+                    workout.count.toFloat()
+                } else {
+                    (((existingAverageCount * existingTotalWorkouts) + workout.count) / newTotalWorkouts)
+                }
+                val newMaxCount = maxOf(existingMaxCount, workout.count.toInt())
+                val newBestDate = if (workout.count.toInt() > existingMaxCount) workout.date else existingBestDate
+
+                // Create a map with safe numeric types (Int/Long/Float)
+                val newRecordMap: Map<String, Any> = mapOf(
+                    "exerciseId" to workout.exerciseId.toInt(),
+                    "exerciseName" to existingExerciseName,
+                    "maxCount" to newMaxCount,
+                    "bestDate" to newBestDate,
+                    "totalWorkouts" to newTotalWorkouts,
+                    "averageCount" to newAverageCount
+                )
+
+                recordRef.set(newRecordMap).addOnFailureListener { e ->
                     android.widget.Toast.makeText(this, "Lỗi cập nhật PR: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
                 }
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this, "Lỗi xử lý PR: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+            }
         }.addOnFailureListener { e ->
             android.widget.Toast.makeText(this, "Lỗi tải PR: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
         }
@@ -220,43 +251,63 @@ class WorkoutResultsActivity : AppCompatActivity() {
     private fun migrateLocalDataToFirestore() {
         val prefs = getSharedPreferences("workout_history", MODE_PRIVATE)
         val historyJson = prefs.getString("history_list", null)
+
+        // Only attempt migration if the user enabled Firebase usage
+        val useFirebase = prefs.getBoolean("use_firebase", false)
+        if (!useFirebase) return
+
         if (historyJson != null) {
             val gson = Gson()
             val type = object : TypeToken<List<WorkoutHistory>>() {}.type
             val historyList: List<WorkoutHistory> = gson.fromJson(historyJson, type)
             val user = auth.currentUser
             if (user != null) {
-                val batch = db.batch()
-                historyList.forEach { workout ->
-                    batch.set(
-                        db.collection("users").document(user.uid).collection("workouts").document(workout.id),
-                        workout
-                    )
-                }
-                batch.commit().addOnSuccessListener {
-                    // Migrate personal records
-                    historyList.groupBy { it.exerciseId }.forEach { (exerciseId, workouts) ->
-                        val maxCount = workouts.maxByOrNull { it.count }
-                        if (maxCount != null) {
-                            val totalWorkouts = workouts.size
-                            val averageCount = workouts.map { it.count.toInt() }.average().toFloat()
-                            val newRecord = PersonalRecord(
-                                exerciseId = exerciseId,
-                                exerciseName = maxCount.exerciseName,
-                                maxCount = maxCount.count,
-                                bestDate = maxCount.date,
-                                totalWorkouts = totalWorkouts,
-                                averageCount = averageCount
-                            )
-                            db.collection("users").document(user.uid).collection("personalRecords")
-                                .document(exerciseId.toString())
-                                .set(newRecord)
-                        }
+                try {
+                    val batch = db.batch()
+                    historyList.forEach { workout ->
+                        // Convert to Map to avoid Short serialization issues
+                        val workoutMap = mapOf(
+                            "id" to workout.id,
+                            "exerciseId" to workout.exerciseId.toInt(),
+                            "exerciseName" to workout.exerciseName,
+                            "count" to workout.count.toInt(),
+                            "targetCount" to workout.targetCount.toInt(),
+                            "date" to workout.date,
+                            "duration" to workout.duration,
+                            "caloriesBurned" to workout.caloriesBurned,
+                            "isCompleted" to workout.isCompleted
+                        )
+                        batch.set(
+                            db.collection("users").document(user.uid).collection("workouts").document(workout.id),
+                            workoutMap
+                        )
                     }
-                    // Không xóa local data để đảm bảo tương thích
-                    // prefs.edit().remove("history_list").apply()
-                }.addOnFailureListener { e ->
-                    android.widget.Toast.makeText(this, "Lỗi migrate dữ liệu: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    batch.commit().addOnSuccessListener {
+                        // Migrate personal records
+                        historyList.groupBy { it.exerciseId }.forEach { (exerciseId, workouts) ->
+                            val maxCount = workouts.maxByOrNull { it.count }
+                            if (maxCount != null) {
+                                val totalWorkouts = workouts.size
+                                val averageCount = workouts.map { it.count.toInt() }.average().toFloat()
+                                val newRecordMap = mapOf(
+                                    "exerciseId" to exerciseId.toInt(),
+                                    "exerciseName" to maxCount.exerciseName,
+                                    "maxCount" to maxCount.count.toInt(),
+                                    "bestDate" to maxCount.date,
+                                    "totalWorkouts" to totalWorkouts,
+                                    "averageCount" to averageCount
+                                )
+                                db.collection("users").document(user.uid).collection("personalRecords")
+                                    .document(exerciseId.toString())
+                                    .set(newRecordMap)
+                            }
+                        }
+                        // Không xóa local data để đảm bảo tương thích
+                    }.addOnFailureListener { e ->
+                        android.widget.Toast.makeText(this, "Lỗi migrate dữ liệu: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(this, "Lỗi migrate dữ liệu sync: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         }
